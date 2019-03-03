@@ -106,15 +106,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb6df4c0c1b22964897bceffefede516, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  increaseLight: 1
-  decreaseLight: 5
-  distanceTrigger: 10
+  lightDuration: 10
+  lightIntensity: 1
   lightSource: {fileID: 5965091949135867978}
   candleFlicker: {fileID: 8843935771810361299}
-  flickerDuration: 5
+  lightColorOscillationRate: 5
   lightColor01: {r: 0.18974723, g: 0.89610153, b: 0.9811321, a: 0}
-  lightColor02: {r: 0.18823527, g: 0.98039216, b: 0.54654187, a: 0}
-  coolDownValue: 10
+  lightColor02: {r: 0.87936836, g: 0.5424528, b: 1, a: 0}
 --- !u!1 &5009627433339314900
 GameObject:
   m_ObjectHideFlags: 0
@@ -127,7 +125,7 @@ GameObject:
   - component: {fileID: 5965091949135867978}
   - component: {fileID: 5732203943380548981}
   m_Layer: 0
-  m_Name: AloeLight
+  m_Name: Light
   m_TagString: light
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -141,7 +139,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5009627433339314900}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.064, y: 1.299, z: -0.038}
+  m_LocalPosition: {x: -0.064, y: 1.704, z: -0.038}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 9155266588492322825}
@@ -154,12 +152,12 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5009627433339314900}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 8
   m_Type: 2
   m_Color: {r: 0.89722055, g: 0.9622642, b: 0.62184054, a: 1}
-  m_Intensity: 1.5
-  m_Range: 6
+  m_Intensity: 1
+  m_Range: 20
   m_SpotAngle: 30
   m_CookieSize: 10
   m_Shadows:
