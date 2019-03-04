@@ -2,21 +2,35 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ProximityDetect : MonoBehaviour
+/* This script works flawlessly for a single object,
+ * but when I add a second prefab with the same script
+ * they interfere with each others light controls. The
+ * particle system Play and Stop works ok for all, so
+ * I know the problem is in the logic for controlling 
+ * the lights. 
+ * 
+ * The light logic is designed to do three things:
+ * 1) increase lights quickly from 0 to Intensity value
+ * 2) keep the light on for the duration of 'Light Duration'
+ * 3) slowly turn light Intensity back to 0.
+ * Mattxreality 3/3/2019
+ */
+
+ class ProximityDetect : MonoBehaviour
 {
     #region Light Member Variables
     [Tooltip("Duration of light FX")]
     [Range(2, 10)] [SerializeField] float lightDuration = 5f;
     [SerializeField] float lightIntensity;
     [SerializeField] Light lightSource;
-    [SerializeField] ParticleSystem candleFlicker;
-    float lightIncrease;
-    float lightDecrease;
+    [SerializeField] ParticleSystem plantParticle;
+    private float lightIncrease;
+    private float lightDecrease;
 
     // starting value for the lerp
-    static float t = 0.0f;
-    static float r = 0.0f;
-    float minimum = 0.0f;
+    private static float t = 0.0f;
+    private static float r = 0.0f;
+    private float minimum = 0.0f;
 
     // Interpolate light color between two colors back and forth
     [SerializeField] float lightColorOscillationRate = 1.0f;
@@ -25,24 +39,25 @@ public class ProximityDetect : MonoBehaviour
     #endregion
 
     // State Machine to manage light
-    enum LightState {Idle, Increasing, Sustaining, Decreasing};
+    private enum LightState {Idle, Increasing, Sustaining, Decreasing};
     private LightState currentState = LightState.Idle;
 
-    float coolDownValue;
-    float currCoolDownValue; // used for countdown and resetting lights & collision
+    private float coolDownValue;
+    private float currCoolDownValue; // used for countdown and resetting lights & collision
 
-    bool collisionsEnabled = true; // for debug code
+    private bool collisionsEnabled = true; // for debug code
 
     private GameObject childObject;
-    private Animation anim;
+    private Animation m_Animator;
 
-    void Start()
+    private void Start()
     {
         // todo get light animation to work
-        childObject = GameObject.Find("Light");
-        anim = childObject.GetComponent<Animation>();
+        Light childObject = gameObject.GetComponentInChildren(typeof(Light)) as Light;  // GameObject.Find("Light");
+        m_Animator = childObject.GetComponent<Animation>();
+
         print("childObject Name :" + childObject.name);
-        print("anim name" + anim);
+        print("anim name" + m_Animator);
 
         // set light control values
         lightIncrease = lightDuration * 0.3f;
@@ -50,8 +65,10 @@ public class ProximityDetect : MonoBehaviour
         coolDownValue = lightDuration + lightIncrease + lightDecrease;
     }
 
-    void Update()
+    private void Update()
     {
+        SetLightColor();
+        DebugMyStuff();
 
         if (!collisionsEnabled) // if collisions are disabled
         {
@@ -63,17 +80,39 @@ public class ProximityDetect : MonoBehaviour
             if (currCoolDownValue < 1) // check if countdown timer is finished, re-enable
             {
                 collisionsEnabled = !collisionsEnabled; // toggle collision enable/disable
-                //lightSource.enabled = !lightSource.enabled; // turn lights on
-                candleFlicker.Stop(); // discontinues particles
-                // anim.Stop("LightFlutter"); // stop light flutter anim
-                // currCoolDownValue = coolDownValue;
+                plantParticle.Stop(); // discontinues particles
                 currentState = LightState.Idle;
             }
         }
-        SetLightColor();
 
+        switch (currentState)
+        {
+            case LightState.Idle:
+                // reset values to original state
+                lightSource.intensity = 0f;
+                t = 0.0f;
+                r = 0.0f;
+                m_Animator.Stop("LightFlutter"); // != todo Not currently working
+                m_Animator.Stop("GrassLightAnimation"); // != todo Not currently working
+                break;
+            case LightState.Increasing:
+                // increase light intensity to 'lightIntensity'
+                lightSource.intensity = Mathf.Lerp(minimum, lightIntensity, t);
+                t += (lightIncrease * .1f) * Time.deltaTime;
+                break;
+            case LightState.Decreasing:
+                // reduce light intensity to zero
+                lightSource.intensity = Mathf.Lerp(lightIntensity, minimum, r);
+                r += (lightDecrease * .1f) * Time.deltaTime;
+                break;
+        }
+    }
+
+    private void DebugMyStuff()
+    {
         if (Input.GetKeyDown("p"))
         {
+            // press 'P' to see values for the following
             print("currCoolDownValue = " + currCoolDownValue);
             print("CoolDownValue = " + coolDownValue);
             print("LightDuration = " + lightDuration);
@@ -81,49 +120,13 @@ public class ProximityDetect : MonoBehaviour
             print("LightDecrease = " + lightDecrease);
             print("Value of 't' =" + t);
             print("Value of 'r' =" + r);
-            //print("CurrentState = " + currentState);
+            print("CurrentState = " + currentState);
         }
-        print("CurrentState = " + currentState);
-
-        switch (currentState)
-        {
-            case LightState.Idle:
-                // do something
-                lightSource.intensity = 0f;
-                t = 0.0f;
-                r = 0.0f;
-                anim.Stop("LightFlutter"); // != todo Not currently working
-                anim.Stop("GrassLightAnimation"); // != todo Not currently working
-                break;
-            case LightState.Increasing:
-                // do something
-                
-                lightSource.intensity = Mathf.Lerp(minimum,lightIntensity,t);
-                t += (lightIncrease*.1f) * Time.deltaTime;
-
-                break;
-            case LightState.Decreasing:
-                // do something
-                lightSource.intensity = Mathf.Lerp(lightIntensity, minimum, r);
-
-                //if (t > 1.0f)
-                //{
-                //    float temp = lightIntensity;
-                //    lightIntensity = minimum;
-                //    minimum = temp;
-                //    t = 0.0f;
-                //}
-                r += (lightDecrease*.1f) * Time.deltaTime;
-                break;
-            case LightState.Sustaining:
-                // do something
-                break;
-        }
-
     }
 
     private IEnumerator StartCountdown(float coolDownValue)
     {
+        // counts down based on 'Light Duration" value
         currCoolDownValue = coolDownValue;
         while (currCoolDownValue > 0)
         {
@@ -133,25 +136,18 @@ public class ProximityDetect : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
-
-    }
-
-    void OnTriggerEnter(Collider other)
-    {
-        if (!collisionsEnabled) { return; } // if collisions are disabled, stop
+        if (!collisionsEnabled) { return; } // if collisions are disabled, stop processing
 
         if (other.tag == "projectile")
         {
-            //lightSource.enabled = !lightSource.enabled; // turn lights on
-            anim.Play("LightFlutter"); // != todo Not currently working
-            anim.Play("GrassLightAnimation"); // != todo Not currently working
-            candleFlicker.Play(); // activate particles
-            collisionsEnabled = !collisionsEnabled; // toggle collision enable/disable
+            // todo index animation and use number. Name is too explicit
+            m_Animator.Play("LightFlutter");
             
+            plantParticle.Play(); // activate particles
+            collisionsEnabled = !collisionsEnabled; // toggle collision to 'disable'
             StartCoroutine(StartCountdown(coolDownValue)); // countdown to reset lights & collision
-
             currentState = LightState.Increasing;
         }
     }
@@ -161,6 +157,5 @@ public class ProximityDetect : MonoBehaviour
         // set light color
         float t = Mathf.PingPong(Time.time, lightColorOscillationRate) / lightColorOscillationRate;
         lightSource.color = Color.Lerp(lightColor01, lightColor02, t);
-
     }
 }

@@ -109,7 +109,7 @@ MonoBehaviour:
   lightDuration: 10
   lightIntensity: 1
   lightSource: {fileID: 5965091949135867978}
-  candleFlicker: {fileID: 8843935771810361299}
+  plantParticle: {fileID: 8843935771810361299}
   lightColorOscillationRate: 5
   lightColor01: {r: 0.18974723, g: 0.89610153, b: 0.9811321, a: 0}
   lightColor02: {r: 0.87936836, g: 0.5424528, b: 1, a: 0}
