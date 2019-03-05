@@ -14,6 +14,10 @@ using UnityEngine;
  * 2) keep the light on for the duration of 'Light Duration'
  * 3) slowly turn light Intensity back to 0.
  * Mattxreality 3/3/2019
+ * 
+ * Ideas:
+ * 1) Instantiate lights and particle systems as needed. 
+ * Don't have as part of prefab.
  */
 
  class ProximityDetect : MonoBehaviour
@@ -80,6 +84,7 @@ using UnityEngine;
             if (currCoolDownValue < 1) // check if countdown timer is finished, re-enable
             {
                 collisionsEnabled = !collisionsEnabled; // toggle collision enable/disable
+                lightSource.enabled = !lightSource.enabled; // turn lights on
                 plantParticle.Stop(); // discontinues particles
                 currentState = LightState.Idle;
             }
@@ -89,7 +94,7 @@ using UnityEngine;
         {
             case LightState.Idle:
                 // reset values to original state
-                lightSource.intensity = 0f;
+                //lightSource.intensity = 0f;
                 t = 0.0f;
                 r = 0.0f;
                 m_Animator.Stop("LightFlutter"); // != todo Not currently working
@@ -97,13 +102,13 @@ using UnityEngine;
                 break;
             case LightState.Increasing:
                 // increase light intensity to 'lightIntensity'
-                lightSource.intensity = Mathf.Lerp(minimum, lightIntensity, t);
-                t += (lightIncrease * .1f) * Time.deltaTime;
+                //lightSource.intensity = Mathf.Lerp(minimum, lightIntensity, t);
+                //t += (lightIncrease * .1f) * Time.deltaTime;
                 break;
             case LightState.Decreasing:
                 // reduce light intensity to zero
-                lightSource.intensity = Mathf.Lerp(lightIntensity, minimum, r);
-                r += (lightDecrease * .1f) * Time.deltaTime;
+                //lightSource.intensity = Mathf.Lerp(lightIntensity, minimum, r);
+                //r += (lightDecrease * .1f) * Time.deltaTime;
                 break;
         }
     }
@@ -147,6 +152,7 @@ using UnityEngine;
             
             plantParticle.Play(); // activate particles
             collisionsEnabled = !collisionsEnabled; // toggle collision to 'disable'
+            lightSource.enabled = !lightSource.enabled; // turn lights on
             StartCoroutine(StartCountdown(coolDownValue)); // countdown to reset lights & collision
             currentState = LightState.Increasing;
         }
