@@ -67,7 +67,7 @@ using UnityEngine;
         SetLightColor();
         DebugMyStuff();
         CheckColliderStatus();
-
+        //test
     }
 
     private void CheckColliderStatus()
